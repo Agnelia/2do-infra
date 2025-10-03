@@ -1,0 +1,14 @@
+# Example Terraform variables file
+# Copy this file to terraform.tfvars and customize the values
+
+resource_group_name  = "rg-2do-app"
+location             = "East US 2"
+static_web_app_name  = "swa-2do-app"
+sku_tier             = "Free"
+sku_size             = "Free"
+
+tags = {
+  Environment = "Production"
+  Application = "2do"
+  ManagedBy   = "Terraform"
+}
