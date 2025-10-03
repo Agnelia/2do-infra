@@ -1,14 +1,76 @@
-# Example Terraform variables file
-# Copy this file to terraform.tfvars and customize the values
+# ==============================================================================
+# TERRAFORM VARIABLES EXAMPLE FILE
+# ==============================================================================
+# This file shows example values for configuring your infrastructure
+# 
+# HOW TO USE:
+# 1. Copy this file: cp terraform.tfvars.example terraform.tfvars
+# 2. Edit terraform.tfvars with your custom values
+# 3. The .gitignore prevents terraform.tfvars from being committed (keeps secrets safe)
+#
+# IMPORTANT FOR GITHUB ACTIONS:
+# When using GitHub Actions, you DON'T need terraform.tfvars
+# Instead, configure these as GitHub Actions inputs or use the defaults
+# ==============================================================================
 
+# ------------------------------------------------------------------------------
+# Resource Group Name
+# ------------------------------------------------------------------------------
+# The name for your Azure Resource Group (container for all resources)
+# Change this to match your naming convention
+# Cost: FREE
 resource_group_name  = "rg-2do-app"
+
+# ------------------------------------------------------------------------------
+# Azure Region
+# ------------------------------------------------------------------------------
+# The Azure region where resources will be created
+# Popular options: "East US 2", "West US 2", "West Europe", "Southeast Asia"
+# All regions have the same free tier pricing (FREE)
+# Cost: FREE for free tier resources
 location             = "East US 2"
+
+# ------------------------------------------------------------------------------
+# Static Web App Name
+# ------------------------------------------------------------------------------
+# Must be globally unique across all Azure Static Web Apps
+# Only lowercase letters, numbers, and hyphens allowed
+# This becomes part of your URL: https://<name>.azurestaticapps.net
+# Cost: FREE when using Free tier
 static_web_app_name  = "swa-2do-app"
+
+# ------------------------------------------------------------------------------
+# SKU Tier (Pricing Tier)
+# ------------------------------------------------------------------------------
+# KEEP AS "Free" TO AVOID COSTS
+# Options:
+#   "Free"     - NO COST - Includes 100GB bandwidth, SSL, custom domains
+#   "Standard" - PAID - Adds staging environments, SLA, higher limits
+# Cost: FREE when "Free", PAID when "Standard"
 sku_tier             = "Free"
+
+# ------------------------------------------------------------------------------
+# SKU Size (Must Match SKU Tier)
+# ------------------------------------------------------------------------------
+# KEEP AS "Free" TO AVOID COSTS
+# Must match sku_tier value:
+#   - If sku_tier = "Free", then sku_size = "Free"
+#   - If sku_tier = "Standard", then sku_size = "Standard"
+# Cost: FREE when "Free", PAID when "Standard"
 sku_size             = "Free"
 
+# ------------------------------------------------------------------------------
+# Resource Tags
+# ------------------------------------------------------------------------------
+# Metadata labels for organizing and tracking Azure resources
+# Customize these to match your organization's standards
+# Cost: FREE - tags don't incur any charges
 tags = {
-  Environment = "Production"
-  Application = "2do"
-  ManagedBy   = "Terraform"
+  Environment = "Production"  # e.g., Production, Development, Staging
+  Application = "2do"         # Your application name
+  ManagedBy   = "Terraform"   # How the infrastructure is managed
+  # Add more tags as needed:
+  # Owner       = "YourName"
+  # CostCenter  = "Engineering"
+  # Project     = "2do-app"
 }
