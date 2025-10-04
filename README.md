@@ -58,12 +58,14 @@ The Azure Static Web App Free tier includes:
    
    (Use values from the Service Principal output above)
 
-4. **Push to main branch**:
-   ```bash
-   git push origin main
-   ```
+4. **Manually trigger deployment**:
+   - Go to the **Actions** tab in your GitHub repository
+   - Select **"Deploy Infrastructure to Azure"** workflow
+   - Click **"Run workflow"** button
+   - Select branch (usually `main`)
+   - Click **"Run workflow"** to start deployment
 
-5. **Done!** GitHub Actions automatically deploys your infrastructure. Check the Actions tab to see progress.
+5. **Done!** GitHub Actions deploys your infrastructure. Check the workflow run to see progress and outputs.
 
 📖 **Detailed step-by-step guide**: See [GITHUB_ACTIONS_SETUP.md](GITHUB_ACTIONS_SETUP.md) for complete instructions with screenshots and troubleshooting.
 

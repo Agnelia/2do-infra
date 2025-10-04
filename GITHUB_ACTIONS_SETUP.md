@@ -2,11 +2,11 @@
 
 ## Overview
 
-This guide explains how to set up GitHub Actions to automatically deploy your Azure infrastructure using Terraform. The workflow is **completely free** - no costs for GitHub Actions or Azure resources.
+This guide explains how to set up GitHub Actions to deploy your Azure infrastructure using Terraform. The workflow is **completely free** - no costs for GitHub Actions or Azure resources.
 
 ## What This Automation Does
 
-When you push code to the `main` branch, GitHub Actions will:
+When you **manually trigger** the workflow from GitHub Actions, it will:
 
 1. ✅ Authenticate with Azure
 2. ✅ Initialize Terraform
@@ -14,6 +14,8 @@ When you push code to the `main` branch, GitHub Actions will:
 4. ✅ Create an execution plan
 5. ✅ Deploy your infrastructure to Azure (FREE tier resources)
 6. ✅ Display your application URL
+
+**Note**: The workflow runs **only when you manually trigger it** - there are no automatic deployments on push or pull requests.
 
 ## Cost Breakdown - Everything is FREE
 
@@ -161,22 +163,22 @@ variable "static_web_app_name" {
 
 ### Step 4: Deploy Infrastructure
 
-#### 4.1 Push to Main Branch
+#### 4.1 Trigger the Workflow Manually
 
-Once secrets are configured, simply push to main:
-
-```bash
-git add .
-git commit -m "Setup Azure infrastructure"
-git push origin main
-```
-
-#### 4.2 Monitor Deployment
+Once secrets are configured, manually trigger the deployment:
 
 1. Go to your GitHub repository
 2. Click **Actions** tab (top menu)
-3. Click on the latest workflow run
-4. Watch the progress in real-time
+3. Select **"Deploy Infrastructure to Azure"** from the workflows list (left sidebar)
+4. Click **"Run workflow"** button (on the right)
+5. Select the branch (usually `main`)
+6. Click the green **"Run workflow"** button to start
+
+#### 4.2 Monitor Deployment
+
+1. The workflow run will appear in the list
+2. Click on the workflow run to see details
+3. Watch the progress in real-time as each step completes
 
 The workflow takes about 2-3 minutes to complete.
 
@@ -281,29 +283,22 @@ jobs:
 
 ## Workflow Behavior
 
-### On Pull Requests
-- ✅ Runs Terraform plan
-- ✅ Posts plan as comment on PR
-- ❌ Does NOT apply changes
-- 💡 Purpose: Preview changes before merging
-
-### On Push to Main
-- ✅ Runs Terraform plan
+### Manual Trigger Only
+- ✅ Triggered manually from Actions tab
+- ✅ Runs Terraform plan to preview changes
 - ✅ Validates configuration
 - ✅ Applies changes to Azure
 - ✅ Displays deployment results
-- 💡 Purpose: Actually deploy infrastructure
+- 💡 Purpose: Deploy infrastructure when you're ready
 
-### Manual Trigger
-- ✅ Can trigger from Actions tab
-- ✅ Useful for testing or one-off deployments
+**No automatic deployments** - the workflow only runs when you manually trigger it from the GitHub Actions tab.
 
 ## File Purposes Explained
 
 ### `.github/workflows/terraform-deploy.yml`
 **Purpose**: GitHub Actions workflow that automates Terraform deployment  
 **What it does**: Runs Terraform commands to deploy Azure infrastructure  
-**When it runs**: On push to main, pull requests, or manual trigger  
+**When it runs**: Only when manually triggered from GitHub Actions tab  
 **Cost**: FREE
 
 ### `main.tf`
@@ -428,12 +423,12 @@ terraform {
 After setup, your workflow is:
 
 1. **Make infrastructure changes** → Edit `.tf` files
-2. **Create pull request** → GitHub Actions shows plan
-3. **Review changes** → See what will be created/modified
-4. **Merge to main** → GitHub Actions deploys automatically
+2. **Commit and push** → Push changes to your repository
+3. **Manually trigger workflow** → Go to Actions tab, select workflow, click "Run workflow"
+4. **Monitor deployment** → Watch the workflow run in real-time
 5. **View results** → Check Actions tab for deployment URL
 
-**Everything runs automatically in GitHub Actions - no manual Terraform commands needed!**
+**The workflow only runs when you manually trigger it from GitHub Actions - no automatic deployments!**
 
 ## Resources
 
