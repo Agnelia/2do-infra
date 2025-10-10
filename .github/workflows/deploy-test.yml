@@ -1,5 +1,5 @@
 # ==============================================================================
-# GITHUB ACTIONS WORKFLOW - TERRAFORM AZURE DEPLOYMENT
+# GITHUB ACTIONS WORKFLOW - TEST ENVIRONMENT DEPLOYMENT
 # ==============================================================================
 # This workflow deploys Azure infrastructure using Terraform
 # 
@@ -28,7 +28,7 @@
 #   See README.md section "GitHub Actions Setup" for detailed instructions
 # ==============================================================================
 
-name: 'Deploy Infrastructure to Azure'
+name: 'Deploy Test Environment'
 
 # ------------------------------------------------------------------------------
 # Trigger Configuration
@@ -52,7 +52,7 @@ permissions:
 # ------------------------------------------------------------------------------
 jobs:
   terraform:
-    name: 'Terraform Deploy'
+    name: 'Deploy Test'
     runs-on: ubuntu-latest  # Free GitHub-hosted runner (no cost)
     
     # Set the working directory for all steps
@@ -186,13 +186,13 @@ jobs:
       #
       # Output: Shows detailed list of changes
       # Cost: FREE - planning doesn't create resources
-      - name: Terraform Plan
+      - name: Terraform Plan (Test)
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: terraform plan -no-color -input=false
+        run: terraform plan -var-file="terraform-test.tfvars" -no-color -input=false
       
       # ------------------------------------------------------------------------
       # Step 8: Terraform Apply
@@ -216,7 +216,7 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: terraform apply -auto-approve -input=false
+        run: terraform apply -var-file="terraform-test.tfvars" -auto-approve -input=false
       
       # ------------------------------------------------------------------------
       # Step 9: Output Results
@@ -237,9 +237,9 @@ jobs:
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-          echo "Deployment completed successfully!"
-          echo "=================================="
+          echo "Test deployment completed successfully!"
+          echo "======================================="
           terraform output
-          echo "=================================="
-          echo "Your Static Web App URL:"
+          echo "======================================="
+          echo "Test Static Web App URL:"
           terraform output -raw static_web_app_default_host_name
