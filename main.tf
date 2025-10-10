@@ -42,8 +42,8 @@ provider "azurerm" {
 # Cost: FREE - Resource groups themselves have no cost in Azure
 
 resource "azurerm_resource_group" "main" {
-  name     = var.resource_group_name  # Name from variables (default: "rg-2do-app")
-  location = var.location              # Azure region (default: "East US 2")
+  name     = var.resource_group_name  # Name from variables (default: "rg-2doHealth-app")
+  location = var.location              # Azure region (default: "North Europe")
   
   # Tags help organize and track resources in Azure portal and billing
   tags = var.tags

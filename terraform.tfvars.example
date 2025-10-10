@@ -19,7 +19,7 @@
 # The name for your Azure Resource Group (container for all resources)
 # Change this to match your naming convention
 # Cost: FREE
-resource_group_name  = "rg-2do-app"
+resource_group_name  = "rg-2doHealth-app"
 
 # ------------------------------------------------------------------------------
 # Azure Region
@@ -37,7 +37,7 @@ location             = "East US 2"
 # Only lowercase letters, numbers, and hyphens allowed
 # This becomes part of your URL: https://<name>.azurestaticapps.net
 # Cost: FREE when using Free tier
-static_web_app_name  = "swa-2do-app"
+static_web_app_name  = "swa-2doHealth-app"
 
 # ------------------------------------------------------------------------------
 # SKU Tier (Pricing Tier)
@@ -67,10 +67,10 @@ sku_size             = "Free"
 # Cost: FREE - tags don't incur any charges
 tags = {
   Environment = "Production"  # e.g., Production, Development, Staging
-  Application = "2do"         # Your application name
+  Application = "2doHealth"         # Your application name
   ManagedBy   = "Terraform"   # How the infrastructure is managed
   # Add more tags as needed:
   # Owner       = "YourName"
   # CostCenter  = "Engineering"
-  # Project     = "2do-app"
+  # Project     = "2doHealth-app"
 }

@@ -81,8 +81,7 @@ Replace `YOUR_SUBSCRIPTION_ID` with the ID from step 1.2:
 az ad sp create-for-rbac \
   --name "github-actions-2do-infra" \
   --role contributor \
-  --scopes /subscriptions/YOUR_SUBSCRIPTION_ID \
-  --sdk-auth
+  --scopes /subscriptions/YOUR_SUBSCRIPTION_ID
 ```
 
 **IMPORTANT**: This command outputs JSON with credentials. **SAVE THIS OUTPUT** - you'll need it in the next step.
@@ -90,11 +89,10 @@ az ad sp create-for-rbac \
 The output looks like:
 ```json
 {
-  "clientId": "12345678-1234-1234-1234-123456789abc",
-  "clientSecret": "your-secret-here",
-  "subscriptionId": "12345678-1234-1234-1234-123456789abc",
-  "tenantId": "12345678-1234-1234-1234-123456789abc",
-  ...
+  "appId": "12345678-1234-1234-1234-123456789abc",
+  "displayName": "github-actions-2do-infra",
+  "password": "your-secret-here",
+  "tenant": "12345678-1234-1234-1234-123456789abc"
 }
 ```
 
@@ -115,10 +113,10 @@ Create these 4 secrets using the values from your Service Principal JSON:
 
 | Secret Name | Value | Where to Find |
 |------------|-------|---------------|
-| `AZURE_CLIENT_ID` | The `clientId` from JSON | Copy from Service Principal output |
-| `AZURE_CLIENT_SECRET` | The `clientSecret` from JSON | Copy from Service Principal output |
-| `AZURE_SUBSCRIPTION_ID` | The `subscriptionId` from JSON | Copy from Service Principal output |
-| `AZURE_TENANT_ID` | The `tenantId` from JSON | Copy from Service Principal output |
+| `AZURE_CLIENT_ID` | The `appId` from JSON | Copy from Service Principal output |
+| `AZURE_CLIENT_SECRET` | The `password` from JSON | Copy from Service Principal output |
+| `AZURE_SUBSCRIPTION_ID` | Your subscription ID from step 1.2 | Copy from Service Principal output or step 1.2 |
+| `AZURE_TENANT_ID` | The `tenant` from JSON | Copy from Service Principal output |
 
 **For each secret:**
 1. Click "New repository secret"
@@ -147,7 +145,7 @@ Open `variables.tf` and modify the `default` values:
 variable "static_web_app_name" {
   description = "Name of the Azure Static Web App"
   type        = string
-  default     = "swa-2do-app"  # Change this to your preferred name
+  default     = "swa-2doHealth-app"  # Change this to your preferred name
 }
 ```
 
@@ -191,7 +189,7 @@ After successful deployment, the workflow shows:
 
 **Your app URL** will be in the format:
 ```
-https://swa-2do-app-abc123.azurestaticapps.net
+https://swa-2doHealth-app-abc123.azurestaticapps.net
 ```
 
 ### Step 5: Get Deployment API Key
@@ -206,8 +204,8 @@ az login
 
 # Get the API key
 az staticwebapp secrets list \
-  --name swa-2do-app \
-  --resource-group rg-2do-app \
+  --name swa-2doHealth-app \
+  --resource-group rg-2doHealth-app \
   --query "properties.apiKey" \
   --output tsv
 ```
@@ -381,7 +379,7 @@ az group create --name rg-terraform-state --location "East US 2"
 
 # Create storage account (use unique name)
 az storage account create \
-  --name tfstate2do \
+  --name tfstate2dohealth \
   --resource-group rg-terraform-state \
   --location "East US 2" \
   --sku Standard_LRS \
@@ -390,7 +388,7 @@ az storage account create \
 # Create container
 az storage container create \
   --name tfstate \
-  --account-name tfstate2do
+  --account-name tfstate2dohealth
 ```
 
 ### 2. Update main.tf
@@ -404,7 +402,7 @@ terraform {
   # Add this backend block
   backend "azurerm" {
     resource_group_name  = "rg-terraform-state"
-    storage_account_name = "tfstate2do"
+    storage_account_name = "tfstate2dohealth"
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
   }

@@ -9,12 +9,12 @@
 # Resource Group Name
 # ------------------------------------------------------------------------------
 # Purpose: Names the Azure Resource Group that contains all resources
-# Example: "rg-2do-app" creates a resource group visible in Azure portal
+# Example: "rg-2doHealth-app" creates a resource group visible in Azure portal
 # Cost: FREE - Resource groups have no cost
 variable "resource_group_name" {
-  description = "Name of the Azure Resource Group"
+  description = "2DoHealth resources"
   type        = string
-  default     = "rg-2do-app"
+  default     = "rg-2doHealth-app"
 }
 
 # ------------------------------------------------------------------------------
@@ -27,7 +27,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region where resources will be created"
   type        = string
-  default     = "East US 2"
+  default     = "North Europe"
 }
 
 # ------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ variable "location" {
 variable "static_web_app_name" {
   description = "Name of the Azure Static Web App"
   type        = string
-  default     = "swa-2do-app"
+  default     = "swa-2doHealth-app"
 }
 
 # ------------------------------------------------------------------------------
@@ -90,7 +90,7 @@ variable "tags" {
   type        = map(string)
   default = {
     Environment = "Production"  # Which environment (Production, Development, etc.)
-    Application = "2do"         # Application name
+    Application = "2doHealth"         # Application name
     ManagedBy   = "Terraform"   # How the resource is managed
   }
 }

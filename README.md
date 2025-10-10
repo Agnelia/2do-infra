@@ -1,12 +1,12 @@
 # 2do-infra
 
-Infrastructure as Code (IaC) for the 2do application using Terraform and Azure.
+Infrastructure as Code (IaC) for the 2doHealth application using Terraform and Azure.
 
 > **💰 COST: 100% FREE** - All resources use Azure's free tier. No credit card charges!
 
 ## Overview
 
-This repository contains Terraform configurations to deploy a 2do application infrastructure on Azure using **GitHub Actions for automation**. Everything is configured to use **free tier resources only** - no Azure costs!
+This repository contains Terraform configurations to deploy a 2doHealth application infrastructure on Azure using **GitHub Actions for automation**. Everything is configured to use **free tier resources only** - no Azure costs!
 
 ### What's Included
 
@@ -46,17 +46,28 @@ The Azure Static Web App Free tier includes:
    az ad sp create-for-rbac \
      --name "github-actions-2do-infra" \
      --role contributor \
-     --scopes /subscriptions/YOUR_SUBSCRIPTION_ID \
-     --sdk-auth
+     --scopes /subscriptions/YOUR_SUBSCRIPTION_ID
    ```
 
-3. **Add GitHub Secrets** (Settings → Secrets → Actions):
-   - `AZURE_CLIENT_ID`
-   - `AZURE_CLIENT_SECRET`
-   - `AZURE_SUBSCRIPTION_ID`
-   - `AZURE_TENANT_ID`
+3. **Add GitHub Secrets** (Settings → Secrets and variables → Actions):
    
-   (Use values from the Service Principal output above)
+   Navigate to your repository settings:
+   - Go to **Settings** tab → **Security** section → **Secrets and variables** → **Actions**
+   - Click **"New repository secret"** for each of the following:
+
+   | Secret Name | Value Source |
+   |-------------|--------------|
+   | `AZURE_CLIENT_ID` | `appId` from your Service Principal output |
+   | `AZURE_CLIENT_SECRET` | `password` from your Service Principal output |
+   | `AZURE_SUBSCRIPTION_ID` | Your Azure subscription ID (from step 1.2 above) |
+   | `AZURE_TENANT_ID` | `tenant` from your Service Principal output |
+   
+   **For each secret:**
+   1. Click "New repository secret"
+   2. Enter the **Name** (e.g., `AZURE_CLIENT_ID`)
+   3. Paste the **Value** from your Service Principal JSON
+   4. Click "Add secret"
+   5. Repeat for all 4 secrets
 
 4. **Manually trigger deployment**:
    - Go to the **Actions** tab in your GitHub repository
@@ -100,17 +111,44 @@ az account set --subscription "YOUR_SUBSCRIPTION_ID"
 Copy the example variables file and customize it:
 
 ```bash
+# For single environment
 cp terraform.tfvars.example terraform.tfvars
+
+# For multiple environments (recommended)
+cp terraform.tfvars.example terraform-prod.tfvars
+cp terraform.tfvars.example terraform-test.tfvars
 ```
 
-Edit `terraform.tfvars` to set your desired configuration:
+Edit each file to set your desired configuration:
 
+**For Production (`terraform-prod.tfvars`):**
 ```hcl
-resource_group_name  = "rg-2do-app"
+resource_group_name  = "rg-2doHealth-app-prod"
 location             = "East US 2"
-static_web_app_name  = "swa-2do-app"
+static_web_app_name  = "swa-2doHealth-app-prod"
 sku_tier             = "Free"
 sku_size             = "Free"
+
+tags = {
+  Environment = "Production"
+  Application = "2doHealth"
+  ManagedBy   = "Terraform"
+}
+```
+
+**For Test (`terraform-test.tfvars`):**
+```hcl
+resource_group_name  = "rg-2doHealth-app-test"
+location             = "East US 2"
+static_web_app_name  = "swa-2doHealth-app-test"
+sku_tier             = "Free"
+sku_size             = "Free"
+
+tags = {
+  Environment = "Test"
+  Application = "2doHealth"
+  ManagedBy   = "Terraform"
+}
 ```
 
 ### 3. Deploy Infrastructure
@@ -121,21 +159,161 @@ Initialize Terraform:
 terraform init
 ```
 
-Review the planned changes:
-
+**For single environment:**
 ```bash
 terraform plan
+terraform apply
 ```
 
-Apply the configuration:
-
+**For multiple environments:**
 ```bash
-terraform apply
+# Deploy to Test environment
+terraform plan -var-file="terraform-test.tfvars"
+terraform apply -var-file="terraform-test.tfvars"
+
+# Deploy to Production environment  
+terraform plan -var-file="terraform-prod.tfvars"
+terraform apply -var-file="terraform-prod.tfvars"
 ```
 
 Type `yes` when prompted to confirm the deployment.
 
-## Deploying Your Application
+## Multi-Environment Setup (Test & Production)
+
+For organizations that need separate Test and Production environments, here's the recommended approach:
+
+### Approach 1: Separate .tfvars Files (Recommended)
+
+This keeps all environments in the same codebase but with different configurations:
+
+#### 1. Create Environment-Specific Files
+
+```bash
+# Create separate variable files
+cp terraform.tfvars.example terraform-test.tfvars
+cp terraform.tfvars.example terraform-prod.tfvars
+```
+
+#### 2. Customize Each Environment
+
+**Key differences for each environment:**
+- **Resource names** (must be unique)
+- **Environment tags** (for organization)
+- **Optionally different regions** (for redundancy)
+
+#### 3. Deploy Each Environment
+
+```bash
+# Deploy Test environment
+terraform apply -var-file="terraform-test.tfvars"
+
+# Deploy Production environment
+terraform apply -var-file="terraform-prod.tfvars"
+```
+
+### Approach 2: Terraform Workspaces
+
+Use Terraform workspaces to manage state separately:
+
+```bash
+# Create and switch to test workspace
+terraform workspace new test
+terraform apply -var-file="terraform-test.tfvars"
+
+# Create and switch to production workspace
+terraform workspace new production
+terraform apply -var-file="terraform-prod.tfvars"
+
+# List workspaces
+terraform workspace list
+
+# Switch between workspaces
+terraform workspace select test
+terraform workspace select production
+```
+
+### Approach 3: Separate GitHub Actions Workflows
+
+Create separate workflows for each environment:
+
+**.github/workflows/deploy-test.yml:**
+```yaml
+name: 'Deploy Test Environment'
+on:
+  workflow_dispatch:
+    
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      # ... same steps as main workflow
+      - name: Terraform Apply
+        run: terraform apply -var-file="terraform-test.tfvars" -auto-approve
+```
+
+**.github/workflows/deploy-prod.yml:**
+```yaml
+name: 'Deploy Production Environment'
+on:
+  workflow_dispatch:
+    
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      # ... same steps as main workflow  
+      - name: Terraform Apply
+        run: terraform apply -var-file="terraform-prod.tfvars" -auto-approve
+```
+
+### Best Practices for Multi-Environment
+
+1. **Use consistent naming conventions:**
+   - `rg-2doHealth-app-test` vs `rg-2doHealth-app-prod`
+   - `swa-2doHealth-app-test` vs `swa-2doHealth-app-prod`
+
+2. **Tag everything properly:**
+   ```hcl
+   tags = {
+     Environment = "Test"        # or "Production"
+     Application = "2doHealth"
+     ManagedBy   = "Terraform"
+     CostCenter  = "Engineering"
+   }
+   ```
+
+3. **Consider separate Azure subscriptions** for better isolation
+
+4. **Use Azure Cost Management** to track costs by environment tags
+
+5. **Both environments can still use FREE tier** (no additional costs)
+
+### Managing State Files
+
+**Important**: Each environment needs its own state file to prevent conflicts.
+
+**Option A: Local state (simpler)**
+- Use different directories or workspaces
+- State files are stored locally
+
+**Option B: Remote state (recommended for teams)**
+- Use different Azure Storage containers for each environment
+- Example: `tfstate-test` and `tfstate-prod` containers
+
+### Environment-Specific Outputs
+
+After deploying each environment, you'll get separate outputs:
+
+```bash
+# Test environment URLs
+terraform output -var-file="terraform-test.tfvars"
+
+# Production environment URLs  
+terraform output -var-file="terraform-prod.tfvars"
+```
+
+This gives you completely separate infrastructure for testing and production while maintaining the same codebase!
+
 
 After the infrastructure is created, you can deploy your application to the Static Web App:
 
@@ -266,9 +444,9 @@ This file creates your Azure resources. It includes:
 
 Defines parameters you can customize:
 
-- `resource_group_name` - Name of the resource group (default: "rg-2do-app")
+- `resource_group_name` - Name of the resource group (default: "rg-2doHealth-app")
 - `location` - Azure region (default: "East US 2")  
-- `static_web_app_name` - Name of your app (default: "swa-2do-app")
+- `static_web_app_name` - Name of your app (default: "swa-2doHealth-app")
 - `sku_tier` - Pricing tier (default: "Free" - **DO NOT CHANGE to avoid costs**)
 - `sku_size` - SKU size (default: "Free" - **DO NOT CHANGE to avoid costs**)
 - `tags` - Resource labels for organization
@@ -346,7 +524,7 @@ Tags help organize and track Azure resources. Customize them in `terraform.tfvar
 ```hcl
 tags = {
   Environment = "Production"
-  Application = "2do"
+  Application = "2doHealth"
   ManagedBy   = "Terraform"
   Owner       = "YourName"
 }
