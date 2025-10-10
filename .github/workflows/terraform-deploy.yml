@@ -134,15 +134,20 @@ jobs:
       # ------------------------------------------------------------------------
       # Step 5: Terraform Init
       # ------------------------------------------------------------------------
-      # Initializes Terraform working directory
+      # Initializes Terraform working directory with backend configuration
       # Purpose:
       #   - Downloads Azure provider plugin
       #   - Sets up backend for state storage in Azure Storage
-      #   - Prepares workspace for planning/applying
+      #   - Configures authentication for backend access
       # 
-      # Note: Now uses Azure Storage backend for state persistence
+      # Note: Uses Service Principal authentication for backend access
       # Cost: FREE tier storage for state files
       - name: Terraform Init
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform init
       
       # ------------------------------------------------------------------------
@@ -163,6 +168,11 @@ jobs:
       # Purpose: Catches configuration errors before planning
       # Cost: FREE
       - name: Terraform Validate
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform validate
       
       # ------------------------------------------------------------------------
@@ -177,6 +187,11 @@ jobs:
       # Output: Shows detailed list of changes
       # Cost: FREE - planning doesn't create resources
       - name: Terraform Plan
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform plan -no-color -input=false
       
       # ------------------------------------------------------------------------
@@ -196,6 +211,11 @@ jobs:
       #
       # Cost: FREE - all resources use free tier
       - name: Terraform Apply
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: terraform apply -auto-approve -input=false
       
       # ------------------------------------------------------------------------
@@ -211,6 +231,11 @@ jobs:
       # Note: API key is not shown (sensitive output)
       # To get API key: Use Azure portal or run terraform output locally
       - name: Show Terraform Outputs
+        env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
         run: |
           echo "Deployment completed successfully!"
           echo "=================================="
