@@ -12,7 +12,7 @@
 # Example: "rg-2doHealth-app" creates a resource group visible in Azure portal
 # Cost: FREE - Resource groups have no cost
 variable "resource_group_name" {
-  description = "2DoHealth resources"
+  description = "Name of the Azure Resource Group"
   type        = string
   default     = "rg-2doHealth-app"
 }
@@ -27,7 +27,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Azure region where resources will be created"
   type        = string
-  default     = "North Europe"
+  default     = "West Europe"
 }
 
 # ------------------------------------------------------------------------------

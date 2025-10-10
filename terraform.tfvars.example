@@ -28,7 +28,7 @@ resource_group_name  = "rg-2doHealth-app"
 # Popular options: "East US 2", "West US 2", "West Europe", "Southeast Asia"
 # All regions have the same free tier pricing (FREE)
 # Cost: FREE for free tier resources
-location             = "East US 2"
+location             = "West Europe"
 
 # ------------------------------------------------------------------------------
 # Static Web App Name
