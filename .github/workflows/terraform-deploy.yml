@@ -107,17 +107,41 @@ jobs:
             }
       
       # ------------------------------------------------------------------------
-      # Step 4: Terraform Init
+      # Step 4: Create Storage Account for Terraform State
+      # ------------------------------------------------------------------------
+      # Creates Azure Storage to persist Terraform state between runs
+      # Purpose: Ensures state file survives between GitHub Actions runs
+      # Cost: FREE tier available for storage accounts
+      - name: Create Terraform State Storage
+        run: |
+          # Create resource group for state storage (if it doesn't exist)
+          az group create --name rg-terraform-state --location "West Europe" --only-show-errors || true
+          
+          # Create storage account for state (if it doesn't exist)
+          az storage account create \
+            --name tfstate2dohealth \
+            --resource-group rg-terraform-state \
+            --location "West Europe" \
+            --sku Standard_LRS \
+            --only-show-errors || true
+          
+          # Create container for state files (if it doesn't exist)
+          az storage container create \
+            --name tfstate \
+            --account-name tfstate2dohealth \
+            --only-show-errors || true
+      
+      # ------------------------------------------------------------------------
+      # Step 5: Terraform Init
       # ------------------------------------------------------------------------
       # Initializes Terraform working directory
       # Purpose:
       #   - Downloads Azure provider plugin
-      #   - Sets up backend for state storage
+      #   - Sets up backend for state storage in Azure Storage
       #   - Prepares workspace for planning/applying
       # 
-      # Note: Uses local state storage (terraform.tfstate file)
-      # For production, consider using Azure Storage backend (still free tier available)
-      # Cost: FREE
+      # Note: Now uses Azure Storage backend for state persistence
+      # Cost: FREE tier storage for state files
       - name: Terraform Init
         run: terraform init
       
