@@ -1,0 +1,196 @@
+# ==============================================================================
+# GITHUB ACTIONS WORKFLOW - TERRAFORM AZURE DEPLOYMENT
+# ==============================================================================
+# This workflow deploys Azure infrastructure using Terraform
+# 
+# PURPOSE:
+#   - Deploys Azure Static Web App when manually triggered
+#   - Runs Terraform plan and apply to create/update infrastructure
+#
+# TRIGGER:
+#   - Manual only (workflow_dispatch)
+#   - Go to Actions tab → Select this workflow → Click "Run workflow"
+#
+# COST: FREE
+#   - GitHub Actions is free for public repositories
+#   - Azure resources use Free tier (no cost)
+#   - No charges for running this workflow
+#
+# HOW IT WORKS:
+#   1. Checks out your code
+#   2. Sets up Terraform
+#   3. Authenticates with Azure using credentials stored in GitHub Secrets
+#   4. Initializes Terraform
+#   5. Plans changes (shows what will be created/modified)
+#   6. Applies changes to Azure
+#
+# SETUP REQUIRED:
+#   See README.md section "GitHub Actions Setup" for detailed instructions
+# ==============================================================================
+
+name: 'Deploy Infrastructure to Azure'
+
+# ------------------------------------------------------------------------------
+# Trigger Configuration
+# ------------------------------------------------------------------------------
+# This workflow runs ONLY when manually triggered from GitHub Actions tab
+# To run: Go to Actions → Deploy Infrastructure to Azure → Run workflow
+on:
+  # Allows manual triggering from GitHub Actions tab
+  # This is the ONLY trigger - no automatic runs on push or PR
+  workflow_dispatch:
+
+# ------------------------------------------------------------------------------
+# Permissions
+# ------------------------------------------------------------------------------
+# Minimal permissions needed for this workflow
+permissions:
+  contents: read        # Read repository contents
+
+# ------------------------------------------------------------------------------
+# Jobs
+# ------------------------------------------------------------------------------
+jobs:
+  terraform:
+    name: 'Terraform Deploy'
+    runs-on: ubuntu-latest  # Free GitHub-hosted runner (no cost)
+    
+    # Set the working directory for all steps
+    defaults:
+      run:
+        shell: bash
+        working-directory: .  # Terraform files are in repo root
+    
+    steps:
+      # ------------------------------------------------------------------------
+      # Step 1: Checkout Code
+      # ------------------------------------------------------------------------
+      # Downloads your repository code to the GitHub Actions runner
+      # Purpose: Makes your Terraform files available to the workflow
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      # ------------------------------------------------------------------------
+      # Step 2: Setup Terraform
+      # ------------------------------------------------------------------------
+      # Installs Terraform CLI on the GitHub Actions runner
+      # Version: Latest stable version recommended by HashiCorp
+      # Cost: FREE - no charge for using Terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0  # Specify version for consistency
+      
+      # ------------------------------------------------------------------------
+      # Step 3: Azure Login
+      # ------------------------------------------------------------------------
+      # Authenticates with Azure using Service Principal credentials
+      # Purpose: Allows Terraform to create/manage Azure resources
+      # 
+      # REQUIRED SECRETS (set in GitHub repository settings):
+      #   - AZURE_CLIENT_ID: Service Principal application ID
+      #   - AZURE_CLIENT_SECRET: Service Principal password
+      #   - AZURE_SUBSCRIPTION_ID: Your Azure subscription ID
+      #   - AZURE_TENANT_ID: Your Azure AD tenant ID
+      #
+      # See README.md for detailed setup instructions
+      # Cost: FREE - authentication has no cost
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: |
+            {
+              "clientId": "${{ secrets.AZURE_CLIENT_ID }}",
+              "clientSecret": "${{ secrets.AZURE_CLIENT_SECRET }}",
+              "subscriptionId": "${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+              "tenantId": "${{ secrets.AZURE_TENANT_ID }}"
+            }
+      
+      # ------------------------------------------------------------------------
+      # Step 4: Terraform Init
+      # ------------------------------------------------------------------------
+      # Initializes Terraform working directory
+      # Purpose:
+      #   - Downloads Azure provider plugin
+      #   - Sets up backend for state storage
+      #   - Prepares workspace for planning/applying
+      # 
+      # Note: Uses local state storage (terraform.tfstate file)
+      # For production, consider using Azure Storage backend (still free tier available)
+      # Cost: FREE
+      - name: Terraform Init
+        run: terraform init
+      
+      # ------------------------------------------------------------------------
+      # Step 5: Terraform Format Check
+      # ------------------------------------------------------------------------
+      # Validates that Terraform files are properly formatted
+      # Purpose: Ensures consistent code style
+      # Note: This step doesn't fail the workflow, just shows warnings
+      # Cost: FREE
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        continue-on-error: true  # Don't fail workflow if formatting is off
+      
+      # ------------------------------------------------------------------------
+      # Step 6: Terraform Validate
+      # ------------------------------------------------------------------------
+      # Checks that Terraform configuration is syntactically valid
+      # Purpose: Catches configuration errors before planning
+      # Cost: FREE
+      - name: Terraform Validate
+        run: terraform validate
+      
+      # ------------------------------------------------------------------------
+      # Step 7: Terraform Plan
+      # ------------------------------------------------------------------------
+      # Creates an execution plan showing what Terraform will do
+      # Purpose:
+      #   - Preview changes before applying them
+      #   - Verify what resources will be created/modified/destroyed
+      #   - Catch potential issues before deployment
+      #
+      # Output: Shows detailed list of changes
+      # Cost: FREE - planning doesn't create resources
+      - name: Terraform Plan
+        run: terraform plan -no-color -input=false
+      
+      # ------------------------------------------------------------------------
+      # Step 8: Terraform Apply
+      # ------------------------------------------------------------------------
+      # Applies the Terraform configuration to Azure
+      # Purpose: Actually creates/updates Azure resources
+      # 
+      # IMPORTANT:
+      #   - Creates real Azure resources
+      #   - Uses FREE tier resources (no cost)
+      #
+      # What happens:
+      #   1. Creates Resource Group in Azure (FREE)
+      #   2. Creates Static Web App with Free tier (FREE)
+      #   3. Sets up serverless functions capability (FREE)
+      #
+      # Cost: FREE - all resources use free tier
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -input=false
+      
+      # ------------------------------------------------------------------------
+      # Step 9: Output Results
+      # ------------------------------------------------------------------------
+      # Displays important information after deployment
+      # Purpose: Shows URLs and resource details
+      # Includes:
+      #   - Static Web App URL (where your app is hosted)
+      #   - Resource Group name
+      #   - Resource IDs
+      # 
+      # Note: API key is not shown (sensitive output)
+      # To get API key: Use Azure portal or run terraform output locally
+      - name: Show Terraform Outputs
+        run: |
+          echo "Deployment completed successfully!"
+          echo "=================================="
+          terraform output
+          echo "=================================="
+          echo "Your Static Web App URL:"
+          terraform output -raw static_web_app_default_host_name
