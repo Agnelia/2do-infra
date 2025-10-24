@@ -89,8 +89,8 @@ variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
   default = {
-    Environment = "Production"  # Which environment (Production, Development, etc.)
-    Application = "2doHealth"         # Application name
-    ManagedBy   = "Terraform"   # How the resource is managed
+    Environment = "Production" # Which environment (Production, Development, etc.)
+    Application = "2doHealth"  # Application name
+    ManagedBy   = "Terraform"  # How the resource is managed
   }
 }

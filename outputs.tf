@@ -75,5 +75,5 @@ output "static_web_app_default_host_name" {
 output "static_web_app_api_key" {
   description = "API key for deploying to the Static Web App"
   value       = azurerm_static_web_app.main.api_key
-  sensitive   = true  # Prevents accidental exposure in logs and console
+  sensitive   = true # Prevents accidental exposure in logs and console
 }

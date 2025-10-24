@@ -9,7 +9,7 @@ terraform {
   # Minimum Terraform version required to run this configuration
   # Using 1.0 or higher ensures access to modern Terraform features
   required_version = ">= 1.0"
-  
+
   # Backend configuration for storing state in Azure Storage
   # This ensures state persists between GitHub Actions runs
   backend "azurerm" {
@@ -18,13 +18,13 @@ terraform {
     container_name       = "tfstate"
     key                  = "terraform.tfstate"
   }
-  
+
   # Azure Resource Manager (azurerm) provider configuration
   # This provider enables Terraform to interact with Azure services
   required_providers {
     azurerm = {
-      source  = "hashicorp/azurerm"  # Official Azure provider from HashiCorp
-      version = "~> 3.0"              # Use any 3.x version (allows minor updates)
+      source  = "hashicorp/azurerm" # Official Azure provider from HashiCorp
+      version = "~> 3.0"            # Use any 3.x version (allows minor updates)
     }
   }
 }
@@ -83,8 +83,8 @@ resource "azurerm_resource_group" "main" {
 # Note: Free tier has NO COST - perfect for development and small projects
 
 resource "azurerm_static_web_app" "main" {
-  name                = var.static_web_app_name          # Name from variables
-  resource_group_name = azurerm_resource_group.main.name # Links to resource group
+  name                = var.static_web_app_name              # Name from variables
+  resource_group_name = azurerm_resource_group.main.name     # Links to resource group
   location            = azurerm_resource_group.main.location # Same region as RG
 
   # SKU (pricing tier) configuration - using FREE tier to avoid costs
