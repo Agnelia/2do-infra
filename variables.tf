@@ -14,7 +14,7 @@
 variable "resource_group_name" {
   description = "Name of the Azure Resource Group"
   type        = string
-  default     = "rg-2doHealth-app"
+  default     = "rg-2doHealth-app-v2"
 }
 
 # ------------------------------------------------------------------------------

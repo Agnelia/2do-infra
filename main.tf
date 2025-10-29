@@ -10,14 +10,10 @@ terraform {
   # Using 1.0 or higher ensures access to modern Terraform features
   required_version = ">= 1.0"
 
-  # Backend configuration for storing state in Azure Storage
-  # This ensures state persists between GitHub Actions runs
-  backend "azurerm" {
-    resource_group_name  = "rg-terraform-state"
-    storage_account_name = "tfstate2dohealth"
-    container_name       = "tfstate"
-    key                  = "terraform.tfstate"
-  }
+  # Backend configuration will be provided dynamically during terraform init
+  # Test environment: uses tfstate2dohealthtest storage account
+  # Production environment: uses tfstate2dohealthprod storage account
+  backend "azurerm" {}
 
   # Azure Resource Manager (azurerm) provider configuration
   # This provider enables Terraform to interact with Azure services

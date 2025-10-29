@@ -115,12 +115,12 @@ jobs:
       - name: Create Terraform State Storage
         run: |
           # Create resource group for state storage (if it doesn't exist)
-          az group create --name rg-terraform-state --location "West Europe" --only-show-errors || true
+          az group create --name rg-terraform-state-v2 --location "West Europe" --only-show-errors || true
           
           # Create storage account for state (if it doesn't exist)
           az storage account create \
-            --name tfstate2dohealth \
-            --resource-group rg-terraform-state \
+            --name tfstate2dohealthtest \
+            --resource-group rg-terraform-state-v2 \
             --location "West Europe" \
             --sku Standard_LRS \
             --only-show-errors || true
@@ -128,7 +128,7 @@ jobs:
           # Create container for state files (if it doesn't exist)
           az storage container create \
             --name tfstate \
-            --account-name tfstate2dohealth \
+            --account-name tfstate2dohealthtest \
             --only-show-errors || true
       
       # ------------------------------------------------------------------------
@@ -148,7 +148,12 @@ jobs:
           ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=rg-terraform-state-v2" \
+            -backend-config="storage_account_name=tfstate2dohealthtest" \
+            -backend-config="container_name=tfstate" \
+            -backend-config="key=terraform.tfstate"
       
       # ------------------------------------------------------------------------
       # Step 5: Terraform Format Check
